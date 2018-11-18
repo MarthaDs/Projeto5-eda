@@ -20,9 +20,11 @@ Tree *createEmptyTree();
 int treeIsEmpty(Tree* tree);
 void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
-void showTree(Tree *root);
 int searchValue(Tree *node, int value);
 void siblings(tree *node, int value);
+void printInOrder(Tree *root);
+void printPreOrder(Tree *root);
+void printPosOrder(Tree *root);
 
 int nodeLevel = 1;
 
@@ -47,7 +49,7 @@ int main() {
                 break;
             
              case 2:
-                showTree(root);
+                //showTree(root);
                 break;
 
              case 3:
@@ -55,7 +57,19 @@ int main() {
                 scanf("%d", &value);
                 searchValue(root,value);
                 break;
-                
+
+             case 7:
+                printInOrder(root);
+                break;
+
+             case 8:
+                printPreOrder(root);
+                break;
+
+             case 9:
+                printPosOrder(root);
+                break;
+                                                           
             default:
                 if(opcao != 11) printf("Opção inválida\n");
                 break;
@@ -131,14 +145,6 @@ void insert(Tree **node, int value) {
     }
 }
 
-void showTree(Tree *root) {
-    if(!treeIsEmpty(root)) {
-        printf("%d\n", root->value);
-        showTree(root->left);
-        showTree(root->right);
-    }
-}
-
 int searchValue(Tree *node, int value) {
     if(node == NULL) {
         printf("Not found, value doesn't exist on the tree.\n");
@@ -170,6 +176,33 @@ void siblings(tree *node, int value) {
         printf("sibling: %d\n", (node->left)->value);
     }
     else if(node->right != NULL && (node->right)->value != value) {
-        printf("sibling: %d\n", (node->right)->value);   
+        printf("siblings: %d\n", (node->right)->value);   
     }
+    else {
+        printf("No siblings!\n");
+    }
+}
+
+void printInOrder(Tree *root) {
+    if(!treeIsEmpty(root)) {
+        printInOrder(root->left);
+        printf("%d\n", root->value);
+        printInOrder(root->right);
+    }
+}
+
+void printPreOrder(Tree *root) {
+    if(!treeIsEmpty(root)) {
+        printf("%d\n", root->value);
+        printPreOrder(root->left);
+        printPreOrder(root->right);
+    }
+}
+
+void printPosOrder(Tree *root) {
+    if(!treeIsEmpty(root)) {
+        printPosOrder(root->left);
+        printPosOrder(root->right);
+        printf("%d\n", root->value);
+ }
 }
