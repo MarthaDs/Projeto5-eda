@@ -23,7 +23,7 @@ Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
 void showTree(Tree *root);
 int searchValue(Tree *node, int value);
 
-int isBalanced = 0;
+int nodeLevel = 1;
 
 int main() {
     int value,opcao = 0;
@@ -150,11 +150,15 @@ int searchValue(Tree *node, int value) {
         else {
             printf("Is the root, doesn't have parent.\n");
         }
+        printf("Level: %d\n", nodeLevel);
+        nodeLevel = 1;
     }
     if(node->value > value) {
+        nodeLevel++;
         searchValue(node->left, value);
     }
     if(node->value < value) {
+        nodeLevel++;
         searchValue(node->right, value);
     }    
 }
