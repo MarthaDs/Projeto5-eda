@@ -7,19 +7,21 @@ typedef struct tree {
     int value;
     struct tree *left;
     struct tree *right;
+    struct tree *parent;
 } Tree;
 
 int showMenu();
-Tree *inicialize();
-Tree *insert(Tree *, int);
+Tree *createEmptyTree();
+int treeIsEmpty(Tree* t);
+void insert(Tree **, int);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
-void showTree(Tree *node);
+void showTree(Tree *root);
 
 int main() {
     int opcao = 0;
     char fileName[MAX];
     char path[] = "BSTs/";
-    Tree *root = inicialize(); 
+    Tree *root = createEmptyTree(); 
 
     while(opcao != 11) {
         opcao = showMenu();
@@ -30,16 +32,15 @@ int main() {
                 gets(fileName);
                 strcpy(path,"BSTs/");
                 strcat(path, fileName);
-                printf("%s", path);
-                loadTreeFromFile(root, path);
+                printf("%s\n", path);
+                root = loadTreeFromFile(root, path);
                 break;
             
              case 2:
-                getchar();
                 showTree(root);
                 break;
             default:
-                printf("Opção inválida\n");
+                if(opcao != 11) printf("Opção inválida\n");
                 break;
         }
     }
@@ -69,8 +70,12 @@ int showMenu() {
     return opcao;
 }
 
-Tree *inicialize() {
+Tree *createEmptyTree() {
     return NULL;
+}
+
+int treeIsEmpty(Tree* t) {
+  return t == NULL;
 }
 
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]) {
@@ -82,35 +87,42 @@ Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]) {
     else {
         int value;
         while (fscanf(file,"%d ",&value) != EOF) {
-            insert(tree,value);
-            if(tree == NULL) printf("sad");
-        } 
+           insert(&tree,value);
+        }
+    }
+    if(file != NULL) fclose(file);
+
+    return tree;
+}
+
+void insert(Tree **node, int value) {
+
+    if(*node == NULL) {
+        *node = (Tree*)malloc(sizeof(Tree));
+        (*node)->left = NULL;
+        (*node)->right = NULL;
+        (*node)->parent = NULL;
+        (*node)->value = value;
+    }
+    if((*node)->value > value) {
+        insert(&(*node)->left ,value);
+        ((*node)->left)->parent = *node;
+    }
+    if((*node)->value < value) {
+        insert(&(*node)->right ,value);
+        ((*node)->right)->parent = *node;
     }
 }
 
-Tree *insert(Tree *node, int value) {
-
-    if(node == NULL) {
-        Tree * newNode = (Tree*) malloc(sizeof(Tree));
-        newNode->left = NULL;
-        newNode->right = NULL;
-        newNode->value = value;
-        node = newNode;
-    }
-    else if (node->value > value) {
-        node->left = insert(node->left,value);
-    }
-    else if(node->value < value) {
-        node->right = insert(node->right, value);
-    }
-
-    return node;
-}
-
-void showTree(Tree *tree) {
-    if(tree != NULL) {
-        printf("%d", tree->value);
-        showTree(tree->left);
-        showTree(tree->right);
+void showTree(Tree *root) {
+    if(!treeIsEmpty(root)) {
+        printf("%d\n", root->value);
+        showTree(root->left);
+        showTree(root->right);
     }
 }
+
+/* void isFull(Tree *root) {
+
+} */
+
