@@ -22,6 +22,7 @@ void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
 void showTree(Tree *root);
 int searchValue(Tree *node, int value);
+void siblings(tree *node, int value);
 
 int nodeLevel = 1;
 
@@ -146,6 +147,7 @@ int searchValue(Tree *node, int value) {
     if(node->value == value) {
         if(node->parent != NULL) {
             printf("Parent: %d\n", (node->parent)->value);
+            siblings(node->parent, value);
         }
         else {
             printf("Is the root, doesn't have parent.\n");
@@ -161,4 +163,13 @@ int searchValue(Tree *node, int value) {
         nodeLevel++;
         searchValue(node->right, value);
     }    
+}
+
+void siblings(tree *node, int value) {
+    if(node->left != NULL && (node->left)->value != value) {
+        printf("sibling: %d\n", (node->left)->value);
+    }
+    else if(node->right != NULL && (node->right)->value != value) {
+        printf("sibling: %d\n", (node->right)->value);   
+    }
 }
