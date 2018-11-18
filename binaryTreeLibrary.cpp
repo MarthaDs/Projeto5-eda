@@ -10,15 +10,23 @@ typedef struct tree {
     struct tree *parent;
 } Tree;
 
+typedef struct queue {
+    int value;
+    struct queue * prox;
+} Queue;
+
 int showMenu();
 Tree *createEmptyTree();
-int treeIsEmpty(Tree* t);
-void insert(Tree **, int);
+int treeIsEmpty(Tree* tree);
+void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
 void showTree(Tree *root);
+int searchValue(Tree *node, int value);
+
+int isBalanced = 0;
 
 int main() {
-    int opcao = 0;
+    int value,opcao = 0;
     char fileName[MAX];
     char path[] = "BSTs/";
     Tree *root = createEmptyTree(); 
@@ -29,7 +37,8 @@ int main() {
         switch(opcao){
             case 1: 
                 getchar();
-                gets(fileName);
+                scanf(" %[^\n]",fileName);
+                //gets(fileName);
                 strcpy(path,"BSTs/");
                 strcat(path, fileName);
                 printf("%s\n", path);
@@ -39,6 +48,13 @@ int main() {
              case 2:
                 showTree(root);
                 break;
+
+             case 3:
+                printf("Enter the value: ");
+                scanf("%d", &value);
+                searchValue(root,value);
+                break;
+                
             default:
                 if(opcao != 11) printf("Opção inválida\n");
                 break;
@@ -122,7 +138,23 @@ void showTree(Tree *root) {
     }
 }
 
-/* void isFull(Tree *root) {
-
-} */
-
+int searchValue(Tree *node, int value) {
+    if(node == NULL) {
+        printf("Not found, value doesn't exist on the tree.\n");
+        return 0;
+    }
+    if(node->value == value) {
+        if(node->parent != NULL) {
+            printf("Parent: %d\n", (node->parent)->value);
+        }
+        else {
+            printf("Is the root, doesn't have parent.\n");
+        }
+    }
+    if(node->value > value) {
+        searchValue(node->left, value);
+    }
+    if(node->value < value) {
+        searchValue(node->right, value);
+    }    
+}
