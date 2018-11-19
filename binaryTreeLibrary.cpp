@@ -11,18 +11,28 @@ typedef struct tree
     struct tree *parent;
 } Tree;
 
-typedef struct queue
-{
-    int value;
-    struct queue *prox;
+
+typedef struct queue {
+    void *tree;
+    struct queue *next;
 } Queue;
 
+typedef struct header{
+	Queue *head; 
+	Queue *tail; 
+} Header;
+
+
+Header *inicializeHeader();
 int showMenu();
 Tree *createEmptyTree();
 int treeIsEmpty(Tree *tree);
 void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
 Tree *searchValue(Tree *node, int value);
+void showTree(Tree *);
+void insertElemQueue(Tree *node);
+void removeElemQueue();
 void siblings(tree *node, int value);
 void printInOrder(Tree *root);
 void printPreOrder(Tree *root);
@@ -31,11 +41,14 @@ void removeValue(Tree *node, int value);
 Tree *FindMin(Tree *node);
 int getHeight(Tree *node);
 
+
 int nodeLevel = 1;
 char path[] = "BSTs/";
+Header *queueHeader = inicializeHeader();
+
 int main()
 {
-    int value, value2, opcao,tamanho = 0;
+    int value, value2, opcao = 0,tamanho = 0;
     char fileName[MAX];
     Tree *root = createEmptyTree();
 
@@ -47,16 +60,16 @@ int main()
         {
         case 1:
             getchar();
-            scanf(" %[^\n]", fileName);
+            scanf(" %[^\n]",fileName);
             //gets(fileName);
-            strcpy(path, "BSTs/");
+            strcpy(path,"BSTs/");
             strcat(path, fileName);
             printf("%s\n", path);
             root = loadTreeFromFile(root, path);
             break;
 
         case 2:
-            //showTree(root);
+            showTree(root);
             break;
 
         case 3:
@@ -100,13 +113,20 @@ int main()
             if (opcao != 11)
                 printf("Opção inválida\n");
             break;
+        
         }
     }
     return 0;
 }
 
-int showMenu()
-{
+Header *inicializeHeader() {
+	Header *header = (Header*) malloc(sizeof(Header));
+    header->head = NULL;
+    header->tail = NULL;
+	return header;
+}
+
+int showMenu() {
     int opcao = 0;
 
     printf("---------------------------------- \n");
@@ -183,6 +203,53 @@ void insert(Tree **node, int value)
         ((*node)->right)->parent = *node;
     }
 }
+
+void showTree(Tree *root) {
+        Tree *aux = (Tree*) malloc(sizeof(Tree));
+
+        aux = root;
+        insertElemQueue(aux);
+
+        while(queueHeader->head != NULL) {
+            printf("%d\n", aux->value);
+            insertElemQueue(aux->left);
+            insertElemQueue(aux->right);
+            removeElemQueue();
+
+            if(queueHeader->head != NULL) {
+                Tree *first = (Tree*)queueHeader->head->tree;
+                aux = first;
+            }
+        }
+}
+
+void insertElemQueue(Tree *node) {
+    
+    if(node != NULL) {
+        Queue *newElem = (Queue*) malloc(sizeof(Queue));
+        newElem->tree = node;
+        
+        if(queueHeader->head == NULL) {
+            queueHeader->head = newElem;
+            queueHeader->tail = newElem;
+            newElem->next = NULL;
+        }
+        else {
+            newElem->next = NULL;
+            queueHeader->tail->next = newElem;
+            queueHeader->tail = newElem;
+        }
+    }
+}
+
+void removeElemQueue() {
+    if(queueHeader->head != NULL) {
+        Queue *aux = queueHeader->head;
+        queueHeader->head = aux->next;
+        free(aux);
+    }
+}
+
 
 Tree *searchValue(Tree *node, int value)
 {
