@@ -29,12 +29,13 @@ void printPreOrder(Tree *root);
 void printPosOrder(Tree *root);
 void removeValue(Tree *node, int value);
 Tree *FindMin(Tree *node);
+int getHeight(Tree *node);
 
 int nodeLevel = 1;
 char path[] = "BSTs/";
 int main()
 {
-    int value, value2, opcao = 0;
+    int value, value2, opcao,tamanho = 0;
     char fileName[MAX];
     Tree *root = createEmptyTree();
 
@@ -58,10 +59,19 @@ int main()
             //showTree(root);
             break;
 
+        case 3:
+
+            break;
+
         case 4:
             printf("Enter the value: ");
             scanf("%d", &value);
             searchValue(root, value);
+            break;
+
+        case 5:
+            tamanho = getHeight(root);
+            printf("Height of the tree : %d\n", tamanho);
             break;
 
         case 6:
@@ -81,6 +91,9 @@ int main()
 
         case 9:
             printPosOrder(root);
+            break;
+        
+        case 10:
             break;
 
         default:
@@ -305,3 +318,20 @@ Tree *FindMin(Tree *node){
         }
     }    
 }
+
+int getHeight(Tree *node)  
+{ 
+   if (node==NULL)  
+       return 0; 
+   else 
+   { 
+       /* compute the depth of each subtree */
+       int lDepth = getHeight(node->left); 
+       int rDepth = getHeight(node->right); 
+  
+       /* use the larger one */
+       if (lDepth > rDepth)  
+           return(lDepth+1); 
+       else return(rDepth+1); 
+   } 
+}  
