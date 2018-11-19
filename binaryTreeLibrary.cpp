@@ -258,14 +258,11 @@ void removeValue(Tree *node, int value)
         printf("Valor do nó a ser deletado : %d\n", nodeRemove->value);
         //primeiro caso, quando o nó n tem filhos
         if(nodeRemove->left == NULL && nodeRemove->right == NULL){
-            printf("oi3\n");
             if(nodeRemove->parent->value > value){
-                printf("oi1\n");
                 nodeRemove->parent->left = NULL;
                 
             }
             if(nodeRemove->parent->value <= value){
-                printf("oi2\n");
                 nodeRemove->parent->right = NULL;
             }
             free(nodeRemove);
