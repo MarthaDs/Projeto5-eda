@@ -11,22 +11,34 @@ typedef struct tree {
 } Tree;
 
 typedef struct queue {
-    int value;
-    struct queue * prox;
+    void *tree;
+    struct queue *next;
 } Queue;
 
+typedef struct header{
+	Queue *head; 
+	Queue *tail; 
+} Header;
+
+
+Header *inicializeHeader();
 int showMenu();
 Tree *createEmptyTree();
 int treeIsEmpty(Tree* tree);
 void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
+void showTree(Tree *);
+void insertElemQueue(Tree *node);
+void removeElemQueue();
 int searchValue(Tree *node, int value);
 void siblings(tree *node, int value);
 void printInOrder(Tree *root);
 void printPreOrder(Tree *root);
 void printPosOrder(Tree *root);
 
+
 int nodeLevel = 1;
+Header *queueHeader = inicializeHeader();
 
 int main() {
     int value,opcao = 0;
@@ -49,7 +61,7 @@ int main() {
                 break;
             
              case 2:
-                //showTree(root);
+                showTree(root);
                 break;
 
              case 3:
@@ -69,13 +81,20 @@ int main() {
              case 9:
                 printPosOrder(root);
                 break;
-                                                           
+
             default:
                 if(opcao != 11) printf("Opção inválida\n");
                 break;
         }
     }
     return 0;
+}
+
+Header *inicializeHeader() {
+	Header *header = (Header*) malloc(sizeof(Header));
+    header->head = NULL;
+    header->tail = NULL;
+	return header;
 }
 
 int showMenu() {
@@ -144,6 +163,53 @@ void insert(Tree **node, int value) {
         ((*node)->right)->parent = *node;
     }
 }
+
+void showTree(Tree *root) {
+        Tree *aux = (Tree*) malloc(sizeof(Tree));
+
+        aux = root;
+        insertElemQueue(aux);
+
+        while(queueHeader->head != NULL) {
+            printf("%d\n", aux->value);
+            insertElemQueue(aux->left);
+            insertElemQueue(aux->right);
+            removeElemQueue();
+
+            if(queueHeader->head != NULL) {
+                Tree *first = (Tree*)queueHeader->head->tree;
+                aux = first;
+            }
+        }
+}
+
+void insertElemQueue(Tree *node) {
+    
+    if(node != NULL) {
+        Queue *newElem = (Queue*) malloc(sizeof(Queue));
+        newElem->tree = node;
+        
+        if(queueHeader->head == NULL) {
+            queueHeader->head = newElem;
+            queueHeader->tail = newElem;
+            newElem->next = NULL;
+        }
+        else {
+            newElem->next = NULL;
+            queueHeader->tail->next = newElem;
+            queueHeader->tail = newElem;
+        }
+    }
+}
+
+void removeElemQueue() {
+    if(queueHeader->head != NULL) {
+        Queue *aux = queueHeader->head;
+        queueHeader->head = aux->next;
+        free(aux);
+    }
+}
+
 
 int searchValue(Tree *node, int value) {
     if(node == NULL) {
