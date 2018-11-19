@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #define MAX 50
+#define true 1
+#define false 0
+
 
 typedef struct tree
 {
@@ -40,6 +43,7 @@ void printPosOrder(Tree *root);
 void removeValue(Tree *node, int value);
 Tree *FindMin(Tree *node);
 int getHeight(Tree *node);
+int isBalance(Tree *);
 
 
 int nodeLevel = 1;
@@ -59,6 +63,7 @@ int main()
         switch (opcao)
         {
         case 1:
+            printf("Digite o nome do arquivo que será carregado: \n");
             getchar();
             scanf(" %[^\n]",fileName);
             //gets(fileName);
@@ -107,6 +112,7 @@ int main()
             break;
         
         case 10:
+            isBalance(root);
             break;
 
         default:
@@ -402,3 +408,30 @@ int getHeight(Tree *node)
        else return(rDepth+1); 
    } 
 }  
+
+int isBalance(Tree *node){
+	Tree *aul = node->left;
+	int l = getHeight(aul);
+	Tree *aur = node->right;
+	int r = getHeight(aur);
+	int total = abs(l - r);
+    printf("resultado: %d\n", total);
+	if(total <= 1) {
+		printf("A árvore está balanceada!\n");
+		return true;
+	}
+    else {
+		printf("A árvore está desbalanceada.\n");
+		return false;	
+	}
+}
+
+/*void balanceTree(Tree *node){
+    int r = isBalance(node);
+    
+    if(r == true) return 0;
+    else {
+
+
+    }
+}*/
