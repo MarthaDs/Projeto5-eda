@@ -3,6 +3,9 @@
 #include <string.h>
 #include <math.h>
 #define MAX 50
+#define true 1
+#define false 0
+
 
 typedef struct tree {
     int value;
@@ -40,7 +43,10 @@ Tree *FindMin(Tree *node);
 int getHeight(Tree *node);
 int isFull(Tree *root);
 Tree *parent(Tree *node, int value);
-
+int isBalance(Tree *node);
+Tree *rightRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
+void leftRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
+void createBackbone(Tree *node);
 
 int nodeLevel = 1;
 char path[] = "BSTs/";
@@ -57,6 +63,7 @@ int main() {
 
         switch (opcao) {
         case 1:
+            printf("Enter the name of the file to be loaded: \n");
             getchar();
             scanf(" %[^\n]",fileName);
             //gets(fileName);
@@ -111,6 +118,7 @@ int main() {
             break;
         
         case 10:
+            //isBalance(root);
             break;
 
         default:
@@ -517,3 +525,73 @@ int isFull(Tree *root) {
     }
     return 0;
 }
+int isBalance(Tree *node){
+	Tree *aul = node->left;
+	int l = getHeight(aul);
+	Tree *aur = node->right;
+	int r = getHeight(aur);
+	int total = abs(l - r);
+    printf("resultado: %d\n", total);
+	if(total <= 1) {
+		printf("The tree is balanced.\n");
+		return true;
+	}
+    else {
+		printf("The tree is not balanced.\n");
+		return false;	
+	}
+}
+Tree *rightRotation(Tree *grandParent, Tree *parent, Tree *leftChild){
+    if(grandParent != NULL){
+        if(grandParent->left == parent){
+            grandParent->left = leftChild;
+        }
+        else{
+            grandParent->right = leftChild;
+        }
+    }    
+    parent->left = leftChild->right;
+    leftChild->right = parent;
+    return grandParent;
+}
+
+void leftRotation(Tree *grandParent, Tree *parent, Tree *leftChild){
+    if(grandParent != NULL){
+        if(grandParent->left == parent){
+            grandParent->left = leftChild;
+        }
+        else{
+            grandParent->right = leftChild;
+        }
+    }    
+    parent->right = leftChild->left;
+    leftChild->left = parent;
+}
+
+void createBackbone(Tree *node) {
+    Tree *grandParent = NULL;
+    Tree *parent = node;
+    Tree *leftChild;
+ 
+    while (parent != NULL) {
+        leftChild = parent->left;
+        if (leftChild != NULL) {
+            grandParent = rightRotation(grandParent, parent, leftChild);
+            parent = leftChild;
+        } 
+        else {
+        grandParent = parent;
+        parent = parent->right;
+        }
+    }
+}    
+/*void balanceTree(Tree *node){
+    
+    Tree *grand, *father, *son;
+
+    int r = isBalance(node);
+    if(r = true) return 0;
+    else{
+        rightRotation(node,left,right);       
+    }
+}*/
