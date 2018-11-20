@@ -14,19 +14,6 @@ typedef struct tree {
     struct tree *parent;
 } Tree;
 
-
-typedef struct queue {
-    void *tree;
-    struct queue *next;
-} Queue;
-
-typedef struct header { 
-	Queue *head; 
-	Queue *tail; 
-    int qntd;
-} Header;
-
-Header *inicializeHeader();
 int showMenu();
 Tree *createEmptyTree();
 int treeIsEmpty(Tree *tree);
@@ -49,7 +36,6 @@ void leftRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
 void createBackbone(Tree *node);
 
 char path[] = "BSTs/";
-Header *queueHeader = inicializeHeader();
 
 int main() {
     int value, value2, opcao = 0, height = 0;
@@ -103,7 +89,7 @@ int main() {
             scanf("%d", &value2);
             printf("%d\n",value2);
             removeValue(root, value2);
-            printf("Value was removed\n");
+
             break;
 
         case 7:
@@ -130,14 +116,6 @@ int main() {
         }
     }
     return 0;
-}
-
-Header *inicializeHeader() {
-	Header *header = (Header*) malloc(sizeof(Header));
-    header->head = NULL;
-    header->tail = NULL;
-    header->qntd = 0;
-	return header;
 }
 
 int showMenu() {
@@ -444,6 +422,9 @@ void printPosOrder(Tree *root) {
 
 void removeValue(Tree *node, int value) {
     Tree *nodeRemove = parent(node,value);
+    if(nodeRemove == NULL) {
+        printf("Can't find this value on the tree\n");
+    }
 
     if(!treeIsEmpty(nodeRemove)) {
         //first case, node hasn't  children
