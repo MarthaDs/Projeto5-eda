@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #define MAX 50
 
-typedef struct tree
-{
+typedef struct tree {
     int value;
     struct tree *left;
     struct tree *right;
@@ -17,11 +17,11 @@ typedef struct queue {
     struct queue *next;
 } Queue;
 
-typedef struct header{
+typedef struct header { 
 	Queue *head; 
 	Queue *tail; 
+    int qntd;
 } Header;
-
 
 Header *inicializeHeader();
 int showMenu();
@@ -30,9 +30,7 @@ int treeIsEmpty(Tree *tree);
 void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
 Tree *searchValue(Tree *node, int value);
-void showTree(Tree *);
-void insertElemQueue(Tree *node);
-void removeElemQueue();
+void showTree(Tree *, int height);
 void siblings(tree *node, int value);
 void printInOrder(Tree *root);
 void printPreOrder(Tree *root);
@@ -40,24 +38,24 @@ void printPosOrder(Tree *root);
 void removeValue(Tree *node, int value);
 Tree *FindMin(Tree *node);
 int getHeight(Tree *node);
+int isFull(Tree *root);
+Tree *parent(Tree *node, int value);
 
 
 int nodeLevel = 1;
 char path[] = "BSTs/";
 Header *queueHeader = inicializeHeader();
 
-int main()
-{
-    int value, value2, opcao = 0,tamanho = 0;
+int main() {
+    int value, value2, opcao = 0, height = 0;
+    int fullTree;
     char fileName[MAX];
     Tree *root = createEmptyTree();
 
-    while (opcao != 11)
-    {
+    while (opcao != 11) {
         opcao = showMenu();
 
-        switch (opcao)
-        {
+        switch (opcao) {
         case 1:
             getchar();
             scanf(" %[^\n]",fileName);
@@ -69,11 +67,17 @@ int main()
             break;
 
         case 2:
-            showTree(root);
+            showTree(root, getHeight(root));
             break;
 
         case 3:
-
+            fullTree = isFull(root);
+            if(fullTree == 1) {
+                printf("Tree is full\n");
+            }
+            else if(fullTree == 0) {
+                printf("Tree isn't full\n");
+            }
             break;
 
         case 4:
@@ -83,8 +87,8 @@ int main()
             break;
 
         case 5:
-            tamanho = getHeight(root);
-            printf("Height of the tree : %d\n", tamanho);
+            height = getHeight(root);
+            printf("Height of the tree : %d\n", height);
             break;
 
         case 6:
@@ -123,6 +127,7 @@ Header *inicializeHeader() {
 	Header *header = (Header*) malloc(sizeof(Header));
     header->head = NULL;
     header->tail = NULL;
+    header->qntd = 0;
 	return header;
 }
 
@@ -149,256 +154,366 @@ int showMenu() {
     return opcao;
 }
 
-Tree *createEmptyTree()
-{
+Tree *createEmptyTree() {
     return NULL;
 }
 
-int treeIsEmpty(Tree *t)
-{
+int treeIsEmpty(Tree *t) {
     return t == NULL;
 }
 
-Tree *loadTreeFromFile(Tree *tree, char fileName[MAX])
-{
+Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]) {
     FILE *file = fopen(fileName, "r");
 
-    if (file == NULL)
-    {
+    if (file == NULL) {
         printf("\nCan't find file\n");
     }
-    else
-    {
+    else {
         int value;
-        while (fscanf(file, "%d ", &value) != EOF)
-        {
+        while (fscanf(file, "%d ", &value) != EOF) {
             insert(&tree, value);
         }
     }
-    if (file != NULL)
+    if (file != NULL) {
         fclose(file);
-
+    }
     return tree;
 }
 
-void insert(Tree **node, int value)
-{
+void insert(Tree **node, int value) {
 
-    if (*node == NULL)
-    {
+    if (*node == NULL) {
         *node = (Tree *)malloc(sizeof(Tree));
         (*node)->left = NULL;
         (*node)->right = NULL;
         (*node)->parent = NULL;
         (*node)->value = value;
     }
-    if ((*node)->value > value)
-    {
+    if ((*node)->value > value) {
         insert(&(*node)->left, value);
         ((*node)->left)->parent = *node;
     }
-    if ((*node)->value < value)
-    {
+    if ((*node)->value < value) {
         insert(&(*node)->right, value);
         ((*node)->right)->parent = *node;
     }
 }
 
-void showTree(Tree *root) {
-        Tree *aux = (Tree*) malloc(sizeof(Tree));
+void showTree(Tree *root,int height) {
+    tree *aux = root;
+    int elems = (pow(2,height));
+    elems--;
+    int order[elems],i = 0,current = 0, numLevel, count, j,
+    spaceLevel = 0, espaceBetween = 3, countAux, space;
 
-        aux = root;
-        insertElemQueue(aux);
-
-        while(queueHeader->head != NULL) {
-            printf("%d\n", aux->value);
-            insertElemQueue(aux->left);
-            insertElemQueue(aux->right);
-            removeElemQueue();
-
-            if(queueHeader->head != NULL) {
-                Tree *first = (Tree*)queueHeader->head->tree;
-                aux = first;
-            }
-        }
-}
-
-void insertElemQueue(Tree *node) {
+    if (aux == NULL) {
+      return;
+    }
     
-    if(node != NULL) {
-        Queue *newElem = (Queue*) malloc(sizeof(Queue));
-        newElem->tree = node;
-        
-        if(queueHeader->head == NULL) {
-            queueHeader->head = newElem;
-            queueHeader->tail = newElem;
-            newElem->next = NULL;
+    order[i] = aux->value;
+    i++;
+
+    while(i < elems) {
+        if(order[current] == 0) {
+          order[i] = 0;
+          i++;
+          order[i] = 0;
+          i++;
         }
         else {
-            newElem->next = NULL;
-            queueHeader->tail->next = newElem;
-            queueHeader->tail = newElem;
+          aux = parent(root, order[current]);
+          
+          if(aux->left != NULL) {
+            if(aux->left->value == order[current])
+              aux = aux->left;
+          }
+          if(aux->right != NULL) {
+            if(aux->right->value == order[current])
+              aux = aux->right;
+          }
+          if (aux->left != NULL)
+            order[i]= aux->left->value;
+          else
+            order[i] = 0;
+          
+          i++;
+          
+          if (aux->right != NULL)
+            order[i]= aux->right->value;
+          else
+            order[i] = 0;
+
+          i++;
         }
+        current++;
+    }
+    current = 1;
+    i = 1;
+    j = 1;
+    numLevel = 2;
+    space = ((espaceBetween- 1) / 2) + 1;
+
+    for(count = 0; count < (height-1) ;count++){
+      spaceLevel += space;
+      space = 2*space;
+    }
+
+    for(count = 0; count < (height-1) ;count++){
+      espaceBetween = (2*espaceBetween) + 1;
+    }
+
+    for(count = 0; count < spaceLevel; count++){
+      printf(" ");
+    }
+    printf("%d\n",order[0]);
+
+    space = space / 2;
+    spaceLevel +=  - space;
+    space = space / 2;
+    espaceBetween += - 1;
+    espaceBetween = espaceBetween / 2;
+
+    do{
+      for(count = 0;count < spaceLevel; count++) {
+        printf(" ");
+      }
+      for(count = 0; count < numLevel; count++) {
+        if(j % 2 == 1) {
+          if(order[j] != 0)
+            printf("/");
+          else
+            printf(" ");
+        }
+        if(j % 2 == 0) {
+          if(order[j] != 0)
+            printf("\\");
+          else
+            printf(" ");
+        }
+        if(count < numLevel-1) {
+          for(countAux = 0; countAux < espaceBetween; countAux++) {
+            printf(" ");
+          }
+        }
+        j++;
+      }
+      printf("\n");
+
+      for(count = 0; count < spaceLevel;count++) {
+        printf(" ");
+      }
+
+      for(count = 0; count < numLevel; count++) {
+        if(i % 2 == 1) {
+          if(order[i] != 0)
+            printf("%d",order[i]);
+          else
+            printf(" ");
+        }
+        if(i % 2 == 0) {
+          if(order[i] != 0)
+            printf("%d",order[i]);
+          else
+            printf(" ");
+        }
+        if(count < numLevel-1) {
+          if(order[i] >= 10){
+            for(countAux = 0; countAux < espaceBetween - 1; countAux++) {
+              printf(" ");
+            }
+          }
+          else {
+            for(countAux = 0; countAux < espaceBetween; countAux++) {
+              printf(" ");
+            }
+          }
+        }
+        i++;
+      }
+      printf("\n");
+
+      numLevel = 2*numLevel;
+      spaceLevel +=  - space;
+      space = space / 2;
+      espaceBetween += - 1;
+      espaceBetween = espaceBetween / 2;
+
+    }while(i < elems);
+}
+
+Tree *parent(Tree *node, int value) {
+    if (node == NULL) {
+      //  printf("Not found, value doesn't exist on the tree.\n");
+        return NULL;
+    }
+    if (node->value == value) {
+        if (node->parent != NULL) {
+            //printf("Parent: %d\n", (node->parent)->value);
+           // siblings(node->parent, value);
+        }
+        else {
+           // printf("Is the root, doesn't have parent.\n");
+        }
+        //printf("Level: %d\n", nodeLevel);
+        return(node);
+        //nodeLevel = 1;
+    }
+    if (node->value > value) {
+        //nodeLevel++;
+        return parent(node->left, value);
+        
+    }
+    if (node->value < value) {
+       // nodeLevel++;
+        return parent(node->right, value);     
     }
 }
 
-void removeElemQueue() {
-    if(queueHeader->head != NULL) {
-        Queue *aux = queueHeader->head;
-        queueHeader->head = aux->next;
-        free(aux);
-    }
-}
-
-
-Tree *searchValue(Tree *node, int value)
-{
-    if (node == NULL)
-    {
+Tree *searchValue(Tree *node, int value) {
+    if (node == NULL) {
         printf("Not found, value doesn't exist on the tree.\n");
+        return NULL;
     }
-    if (node->value == value)
-    {
-        if (node->parent != NULL)
-        {
+    if (node->value == value) {
+        if (node->parent != NULL) {
             printf("Parent: %d\n", (node->parent)->value);
             siblings(node->parent, value);
         }
-        else
-        {
+        else {
             printf("Is the root, doesn't have parent.\n");
         }
         printf("Level: %d\n", nodeLevel);
         return(node);
         nodeLevel = 1;
     }
-    if (node->value > value)
-    {
+    if (node->value > value) {
         nodeLevel++;
         return searchValue(node->left, value);
         
     }
-    if (node->value < value)
-    {
+    if (node->value < value) {
         nodeLevel++;
-        return searchValue(node->right, value);
-        
+        return searchValue(node->right, value);     
     }
 }
 
-void siblings(tree *node, int value)
-{
-    if (node->left != NULL && (node->left)->value != value)
-    {
+void siblings(tree *node, int value) {
+    if (node->left != NULL && (node->left)->value != value) {
         printf("sibling: %d\n", (node->left)->value);
     }
-    else if (node->right != NULL && (node->right)->value != value)
-    {
+    else if (node->right != NULL && (node->right)->value != value) {
         printf("siblings: %d\n", (node->right)->value);
     }
-    else
-    {
+    else {
         printf("No siblings!\n");
     }
 }
 
-void printInOrder(Tree *root)
-{
-    if (!treeIsEmpty(root))
-    {
+void printInOrder(Tree *root) {
+    if (!treeIsEmpty(root)) {
         printInOrder(root->left);
         printf("%d\n", root->value);
         printInOrder(root->right);
     }
 }
 
-void printPreOrder(Tree *root)
-{
-    if (!treeIsEmpty(root))
-    {
+void printPreOrder(Tree *root) {
+    if (!treeIsEmpty(root)) {
         printf("%d\n", root->value);
         printPreOrder(root->left);
         printPreOrder(root->right);
     }
 }
 
-void printPosOrder(Tree *root)
-{
-    if (!treeIsEmpty(root))
-    {
+void printPosOrder(Tree *root) {
+    if (!treeIsEmpty(root)) {
         printPosOrder(root->left);
         printPosOrder(root->right);
         printf("%d\n", root->value);
     }
 }
 
-void removeValue(Tree *node, int value)
-{
-        Tree *nodeRemove = searchValue(node,value);
-        printf("Valor do nó a ser deletado : %d\n", nodeRemove->value);
-        //primeiro caso, quando o nó n tem filhos
-        if(nodeRemove->left == NULL && nodeRemove->right == NULL){
-            if(nodeRemove->parent->value > value){
+void removeValue(Tree *node, int value) {
+    Tree *nodeRemove = searchValue(node,value);
+
+    if(!treeIsEmpty(nodeRemove)) {
+        //first case, node hasn't  children
+        if(nodeRemove->left == NULL && nodeRemove->right == NULL) {
+            if(nodeRemove->parent->value > value) {
                 nodeRemove->parent->left = NULL;
                 
             }
-            if(nodeRemove->parent->value <= value){
+            if(nodeRemove->parent->value <= value) {
                 nodeRemove->parent->right = NULL;
             }
             free(nodeRemove);
         }
-        //segundo caso, quando o nó tem 1 filhos
-        else if( nodeRemove->left != NULL &&  nodeRemove->right == NULL){
-            if(nodeRemove->parent->value > value){
+        //second case, node has 1 kid
+        else if( nodeRemove->left != NULL &&  nodeRemove->right == NULL) {
+            if(nodeRemove->parent->value > value) {
                 nodeRemove->parent->left = nodeRemove->left;
             }
-            else{
+            else {
                 nodeRemove->parent->right =nodeRemove->left;
             }
             free(nodeRemove);
 
         }
-        else if( nodeRemove->left == NULL &&  nodeRemove->right != NULL ){
-            if(nodeRemove->parent->value > value){
+        else if( nodeRemove->left == NULL &&  nodeRemove->right != NULL ) {
+            if(nodeRemove->parent->value > value) {
                 nodeRemove->parent->left = nodeRemove->right;
             }
-            else{
+            else {
                 nodeRemove->parent->right = nodeRemove->right;
             }
             free(nodeRemove);
         }
-        //terceiro caso, quando o no tem 2 filho
-        else{
+        //third case, node has 2 children
+        else {
             Tree *tempNode = FindMin(nodeRemove->right);
             nodeRemove->value = tempNode->value;
             removeValue(nodeRemove->right, tempNode->value);
         }
+    }
 }
 
-Tree *FindMin(Tree *node){
-    while(1){
-        if(node->left != NULL){
+Tree *FindMin(Tree *node) {
+    while(1) {
+        if(node->left != NULL) {
             node = node->left;
         }
-        else{
+        else {
             return node;
         }
     }    
 }
 
-int getHeight(Tree *node)  
-{ 
-   if (node==NULL)  
+int getHeight(Tree *node) { 
+   if (node==NULL) { 
        return 0; 
-   else 
-   { 
-       /* compute the depth of each subtree */
-       int lDepth = getHeight(node->left); 
-       int rDepth = getHeight(node->right); 
-  
-       /* use the larger one */
-       if (lDepth > rDepth)  
-           return(lDepth+1); 
-       else return(rDepth+1); 
+   }
+   else { 
+       int heightLeft = getHeight(node->left); 
+       int heightRight = getHeight(node->right); 
+
+       if (heightLeft > heightRight) {
+           return(heightLeft + 1); 
+       }
+       else { 
+            return(heightRight + 1); 
+        }
    } 
 }  
+
+int isFull(Tree *root) {
+    if(root != NULL) {
+        if(root->left == NULL && root->right == NULL) {
+            return 1;
+        }
+
+        if(root->left != NULL && root->right != NULL) {
+            return (isFull(root->left) && isFull(root->right));
+        }
+    }
+    return 0;
+}
