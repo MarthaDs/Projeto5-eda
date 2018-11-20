@@ -32,7 +32,7 @@ Tree *createEmptyTree();
 int treeIsEmpty(Tree *tree);
 void insert(Tree **root, int value);
 Tree *loadTreeFromFile(Tree *tree, char fileName[MAX]);
-Tree *searchValue(Tree *node, int value);
+Tree *searchValue(Tree *node, int value, int nodeLevel);
 void showTree(Tree *, int height);
 void siblings(tree *node, int value);
 void printInOrder(Tree *root);
@@ -48,7 +48,6 @@ Tree *rightRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
 void leftRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
 void createBackbone(Tree *node);
 
-int nodeLevel = 1;
 char path[] = "BSTs/";
 Header *queueHeader = inicializeHeader();
 
@@ -56,6 +55,7 @@ int main() {
     int value, value2, opcao = 0, height = 0;
     int fullTree;
     char fileName[MAX];
+    int nodeLevel = 1;
     Tree *root = createEmptyTree();
 
     while (opcao != 11) {
@@ -90,7 +90,7 @@ int main() {
         case 4:
             printf("Enter the value: ");
             scanf("%d", &value);
-            searchValue(root, value);
+            searchValue(root, value, nodeLevel);
             break;
 
         case 5:
@@ -103,6 +103,7 @@ int main() {
             scanf("%d", &value2);
             printf("%d\n",value2);
             removeValue(root, value2);
+            printf("Value was removed\n");
             break;
 
         case 7:
@@ -281,7 +282,7 @@ void showTree(Tree *root,int height) {
     espaceBetween += - 1;
     espaceBetween = espaceBetween / 2;
 
-    do{
+    while(i < elems){
       for(count = 0;count < spaceLevel; count++) {
         printf(" ");
       }
@@ -346,7 +347,7 @@ void showTree(Tree *root,int height) {
       espaceBetween += - 1;
       espaceBetween = espaceBetween / 2;
 
-    }while(i < elems);
+    }
 }
 
 Tree *parent(Tree *node, int value) {
@@ -377,7 +378,7 @@ Tree *parent(Tree *node, int value) {
     }
 }
 
-Tree *searchValue(Tree *node, int value) {
+Tree *searchValue(Tree *node, int value, int nodeLevel) {
     if (node == NULL) {
         printf("Not found, value doesn't exist on the tree.\n");
         return NULL;
@@ -396,12 +397,12 @@ Tree *searchValue(Tree *node, int value) {
     }
     if (node->value > value) {
         nodeLevel++;
-        return searchValue(node->left, value);
+        return searchValue(node->left, value, nodeLevel);
         
     }
     if (node->value < value) {
         nodeLevel++;
-        return searchValue(node->right, value);     
+        return searchValue(node->right, value, nodeLevel);     
     }
 }
 
@@ -442,7 +443,7 @@ void printPosOrder(Tree *root) {
 }
 
 void removeValue(Tree *node, int value) {
-    Tree *nodeRemove = searchValue(node,value);
+    Tree *nodeRemove = parent(node,value);
 
     if(!treeIsEmpty(nodeRemove)) {
         //first case, node hasn't  children
