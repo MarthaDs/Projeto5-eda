@@ -30,10 +30,14 @@ Tree *FindMin(Tree *node);
 int getHeight(Tree *node);
 int isFull(Tree *root);
 Tree *parent(Tree *node, int value);
-int isBalance(Tree *node);
 Tree *rightRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
 void leftRotation(Tree *grandParent, Tree *parent, Tree *leftChild);
-void createBackbone(Tree *node);
+Tree *createBackbone(Tree *node);
+unsigned int binarytree_count_recursive;
+unsigned int binarytree_count(Tree *tree);
+void makeRotation(unsigned int count, Tree *nodeBackbone);
+int greatestPowerOf2LessThanN(int n);
+void balanceTree(Tree *node);
 
 char path[] = "BSTs/";
 
@@ -550,7 +554,7 @@ void leftRotation(Tree *grandParent, Tree *parent, Tree *leftChild){
     leftChild->left = parent;
 }
 
-void createBackbone(Tree *node) {
+Tree *createBackbone(Tree *node) {
     Tree *grandParent = NULL;
     Tree *parent = node;
     Tree *leftChild;
@@ -566,14 +570,66 @@ void createBackbone(Tree *node) {
         parent = parent->right;
         }
     }
-}    
-/*void balanceTree(Tree *node){
-    
-    Tree *grand, *father, *son;
+    return grandParent;
+}
 
-    int r = isBalance(node);
-    if(r = true) return 0;
-    else{
-        rightRotation(node,left,right);       
+unsigned int binarytree_count_recursive(Tree *node)
+{
+    unsigned int count = 1;
+    if (node->left != NULL) {
+       count += binarytree_count_recursive(node->left);
     }
-}*/
+    if (node->right != NULL) {
+        count += binarytree_count_recursive(node->right);
+    }
+    return count;
+}
+ 
+unsigned int binarytree_count(Tree *tree)
+{
+    unsigned int count = 0;
+    if (tree->node != NULL) {
+        count = binarytree_count_recursive(tree->node);
+    }
+    return count;
+}
+
+void makeRotation(unsigned int count, Tree *nodeBackbone){
+    Tree *grandParent = NULL;
+    Tree *parent = nodeBackbone;
+    Tree *child = nodeBackbone->right;
+    for (; count > 0; count--) {
+        if (child != NULL) {
+            leftRotation(grandParent, parent, child);
+            grandParent = child;
+            parent = grandParent->right;
+            child = parent->right;
+        } 
+        else {
+            break;
+        }
+    }
+} 
+
+int greatestPowerOf2LessThanN(int n) {
+  int x = binarytree_count(n);
+  return (1 << x);
+}
+void balanceTree(Tree *node){
+    if(isBalance(node) == false){    
+        int n = 0;
+        for (Tree *tmp = node; tmp !=NULL; tmp = tmp->right) {
+            n++;
+        }
+  
+        int m = greatestPowerOf2LessThanN(n + 1) - 1;
+        unsigned int r = (n - m);
+        Tree *aux = createBackbone(node);
+        makeRotations(r, aux);
+ 
+        while (m > 1) {
+            makeRotations(m /= 2);
+        }
+    }
+}
+
