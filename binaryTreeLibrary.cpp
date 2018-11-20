@@ -43,7 +43,9 @@ void printPosOrder(Tree *root);
 void removeValue(Tree *node, int value);
 Tree *FindMin(Tree *node);
 int getHeight(Tree *node);
-int isBalance(Tree *);
+int isBalance(Tree *node);
+void rightRotation(Tree *grand, Tree *father, Tree *son);
+void leftRotation(Tree *grand, Tree *father, Tree *son);
 
 
 int nodeLevel = 1;
@@ -63,7 +65,7 @@ int main()
         switch (opcao)
         {
         case 1:
-            printf("Digite o nome do arquivo que será carregado: \n");
+            printf("Enter the name of the file to be loaded: \n");
             getchar();
             scanf(" %[^\n]",fileName);
             //gets(fileName);
@@ -112,7 +114,7 @@ int main()
             break;
         
         case 10:
-            isBalance(root);
+            //isBalance(root);
             break;
 
         default:
@@ -342,7 +344,7 @@ void removeValue(Tree *node, int value)
 {
         Tree *nodeRemove = searchValue(node,value);
         printf("Valor do nó a ser deletado : %d\n", nodeRemove->value);
-        //primeiro caso, quando o nó n tem filhos
+        //primeiro caso, quando o nó n tem sons
         if(nodeRemove->left == NULL && nodeRemove->right == NULL){
             if(nodeRemove->parent->value > value){
                 nodeRemove->parent->left = NULL;
@@ -353,7 +355,7 @@ void removeValue(Tree *node, int value)
             }
             free(nodeRemove);
         }
-        //segundo caso, quando o nó tem 1 filhos
+        //segundo caso, quando o nó tem 1 sons
         else if( nodeRemove->left != NULL &&  nodeRemove->right == NULL){
             if(nodeRemove->parent->value > value){
                 nodeRemove->parent->left = nodeRemove->left;
@@ -373,7 +375,7 @@ void removeValue(Tree *node, int value)
             }
             free(nodeRemove);
         }
-        //terceiro caso, quando o no tem 2 filho
+        //terceiro caso, quando o no tem 2 son
         else{
             Tree *tempNode = FindMin(nodeRemove->right);
             nodeRemove->value = tempNode->value;
@@ -417,21 +419,45 @@ int isBalance(Tree *node){
 	int total = abs(l - r);
     printf("resultado: %d\n", total);
 	if(total <= 1) {
-		printf("A árvore está balanceada!\n");
+		printf("The tree is balanced.\n");
 		return true;
 	}
     else {
-		printf("A árvore está desbalanceada.\n");
+		printf("The tree is not balanced.\n");
 		return false;	
 	}
 }
+void rightRotation(Tree *grand, Tree *father, Tree *son){
+    if(grand != NULL){
+        if(grand->left == father){
+            grand->left = son;
+        }
+        else{
+            grand->right = son;
+        }
+    }    
+    father->left = son->right;
+    son->right = father;
 
+}
+void leftRotation(Tree *grand, Tree *father, Tree *son){
+    if(grand != NULL){
+        if(grand->left == father){
+            grand->left = son;
+        }
+        else{
+            grand->right = son;
+        }
+    }    
+    father->right = son->left;
+    son->left = father;
+
+}
 /*void balanceTree(Tree *node){
-    int r = isBalance(node);
     
-    if(r == true) return 0;
-    else {
-
+    int r = isBalance(node);
+    if(r = true) return 0;
+    else{
 
     }
 }*/
